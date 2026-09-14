@@ -27,3 +27,11 @@
     - name: print output
       ansible.builtin.debug:
         msg: "{{ ec2_output }}"
+
+    - name: create route 53 record
+      ansible.builtin.debug:
+        msg: "instance name: {{ item.item }} privateip: {{ item.instances[0].private_ip_address }}"
+      loop: "{{ ec2_output.results }}"
+
+
+      
