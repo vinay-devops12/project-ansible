@@ -1,17 +1,17 @@
-
+---
 - name: roboshop instance management
   hosts: localhost
   connection: local
   vars:
   domain_name: daws-90s.shop
   action: create
-    instances:
+  instances:
       - mongodb
       - redis
       - rabbitmq
       - catalogue
       - frontend
-    ami_id: "ami-0220d79f3f480ecf5"
+  ami_id: "ami-0220d79f3f480ecf5"
 
   tasks:
     - name: create ec2-instance
