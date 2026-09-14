@@ -63,11 +63,12 @@
         - item.item != "frontend"
         - action == "create"
 
-- name: Delete Route 53 DNS records
+- name: delete r53 records
   amazon.aws.route53:
-    state: absent
-    zone: "{{ domain_name }}"
-    record: "{{ domain_name if item == 'frontend' else item ~ '.' ~ domain_name }}"
-    type: A
-  loop: "{{ instances }}"
+      state: absent
+      zone: "{{ domain_name }}"
+      record: "{{ item }}.{{ domain_name }}" # mongodb.daws90s.shop
+      ttl: 1
+      type: A
+  loop: "{{ instances  }}"  
   when: action == "delete"
