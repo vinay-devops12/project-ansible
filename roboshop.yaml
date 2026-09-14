@@ -64,19 +64,12 @@
         - action == "create"
 
 
-
-    - name: Delete Route 53 DNS record
-      hosts: localhost
-      connection: local
-      tasks:
-    - name: Delete an A record
-      amazon.aws.route53:
+- name: Delete Route 53 DNS records
+  amazon.aws.route53:
         state: absent
         zone: "{{ domain_name }}"
-        record:  "{{ item.item }}.{{ domain_name }}"
+        record: "{{ item }}.{{ domain_name }}"
         type: A
-      loop: {{ instances }}
-      when: 
-       - action == "delete"
-
+  loop: "{{ instances }}"
+  when: action == "delete"
 
