@@ -12,7 +12,7 @@
         state: present
 
     - name: allow remote connections
-      cansible.builtin.replae:
+      ansible.builtin.replae:
         path: /etc/redis/redis.conf
         regexp: '127.0.0.1'
         replace: '0.0.0.0'
