@@ -7,7 +7,7 @@
     action: create
     instances:
       - mongodb
-      # - redis
+      - redis
       # - rabbitmq
       # - catalogue
       # - frontend
