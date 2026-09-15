@@ -12,15 +12,15 @@
         state: present
 
     - name: allow remote connections
-      ansible.builtin.replae:
+      ansible.builtin.replace:
         path: /etc/redis/redis.conf
-        regexp: '127.0.0.1'
+        regexp: '127\.0\.0\.1'
         replace: '0.0.0.0'
 
     - name: disable protected mode
       ansible.builtin.lineinfile:
         path: /etc/redis/redis.conf
-        regexp: 'protected-mode yes'
+        regexp: '^protected-mode\s+yes'
         line: 'protected-mode no'
 
     - name: enable and start redis service
