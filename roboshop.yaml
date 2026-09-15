@@ -7,10 +7,10 @@
     action: create
     instances:
       - mongodb
-      - redis
-      - rabbitmq
-      - catalogue
-      - frontend
+      # - redis
+      # - rabbitmq
+      # - catalogue
+      # - frontend
     ami_id: "ami-0220d79f3f480ecf5"
 
   tasks:
