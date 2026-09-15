@@ -1,0 +1,3 @@
+- name: configure the mysql server
+  host: mysql
+  becomes:

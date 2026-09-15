@@ -8,9 +8,10 @@
     instances:
       - mongodb
       - redis
-      # - rabbitmq
-      # - catalogue
-      # - frontend
+      - rabbitmq
+      - catalogue
+      - frontend
+      - mysql
     ami_id: "ami-0220d79f3f480ecf5"
 
   tasks:
