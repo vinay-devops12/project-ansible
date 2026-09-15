@@ -6,7 +6,7 @@
     domain_name: daws-90s.shop
     action: create
     instances:
-      #- mongodb
+      - mongodb
       - redis
       - rabbitmq
       - catalogue
