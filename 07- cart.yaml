@@ -1,6 +1,9 @@
    - name: configure the cart sevrvice
      hosts: cart
      become: true
+     vars:
+       CATALOGUE_HOST: "catalogue.daws-90s.shop"
+       REDIS_HOST: "redis.daws-90s.shop"
      tasks:
        - name: enable  nodejs -y service
          command: dnf module enable nodejs:20 -y
