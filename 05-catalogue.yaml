@@ -2,6 +2,7 @@
   hosts: catalogue
   become: true
   vars:
+    MONGODB_HOST: "mongodb.daws-90s.shop"
   tasks:
     - name: enable nodejs:20 module stream
       ansible.builtin.command: dnf module enable nodejs:20 -y
