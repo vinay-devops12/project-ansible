@@ -1,0 +1,107 @@
+- name: catalogue service
+  hosts: catalogue
+  become: true
+  tasks:
+    - name: dnf module enable nodejs:20 -y
+      command: dnf module enable nodejs:20 -y
+
+    - name: Install nodejs
+      ansible.builtin.package:
+        name: nodejs
+        state: present
+
+    - name: Create the system user 
+      ansible.builtin.user:
+        name: roboshop
+        system: true     
+        home: /app      
+        shell: /sbin/nologin     
+        state: present
+   
+    - name: remove app directory
+      file:
+        path: /app
+        state: absent
+
+    - name: remove the catalogue.zip in tmp directory
+      file:
+        path: /tmp/catalogue.zip
+        state: absent
+
+    - name: Create app directory if it does not exist
+      ansible.builtin.file:
+        path: /app
+        state: directory
+
+    - name: Download the app directory
+      ansible.builtin.get_url:
+        url:  https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip 
+        dest: /tmp/catalogue.zip
+
+
+    - name: Extract local to unarchive
+      ansible.builtin.unarchive:
+        src: /tmp/catalogue.zip
+        dest: /app
+        remote_src: true
+
+    - name: Install dependencies 
+      community.general.npm:
+        path: /app
+        state: present
+
+    - name: Copy file catalogue service
+      ansible.builtin.template:
+        src: catalogue.service.j2
+        dest: /etc/systemd/system/catalogue.service  
+
+    - name: copy the mongo repo
+      ansible.builtin.copy:
+        src: mongo.repo
+        dest: /etc/yum.repos.d/mongo.repo
+
+    - name: Install  mongodb client
+      ansible.builtin.package:
+        name: mongodb-mongosh
+        state: present
+
+    - name: check the catalogue schema exist or not
+      shell: mongosh --host "{{ MONGODB_HOST }}" --eval "db.adminCommand('listDatabases').databases.map(db => db.name).includes('catalogue')"
+      register: catalogue_output
+      ignore_errors: yes
+
+    - name: print catalogue output
+      debug: 
+        msg: "{{ catalogue_output.stdout }}"
+    - name: load products
+      shell: mongosh --host "{{ MONGODB_HOST }}"</app/db/master-data.js
+      when: catalogue_output.stdout == "false"
+      tags:
+        - mongodb
+
+    - name: demon reload
+      ansible.builtin.systemd_service:
+      daemon_reload: true
+
+    - name: enable and start catalogue
+      service:
+        name: catalogue
+        state: restarted
+        enabled: yes
+
+       
+
+ 
+
+
+
+      
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,84 @@
+   - name: payment service configure
+     hosts: payment
+     become: yes
+     tasks:
+       - name: install python3 gcc python3-devel -y
+         ansible.builtin.package:
+            name: "{{ item }}"
+            state: present
+         loop:
+           - python3   
+           - gcc
+           - python3-devel
+
+       - name: Create system user account
+         ansible.builtin.user:
+           name: roboshop
+           shell: /sbin/nologin 
+           home: /app
+           state: present
+
+       - name: Remove a directory and all of its contents
+         ansible.builtin.file:
+           path: /app
+           state: absent
+
+       - name: Remove the payment.zip file
+         ansible.builtin.file:
+           path: /tmp/payment.zip
+           state: absent
+
+       - name: Create the app directory
+         ansible.builtin.file:
+           path: /app
+           state: directory
+
+       - name: Download a payment gateway file
+         ansible.builtin.get_url:
+           url: https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip
+           dest: /tmp/payment.zip
+           owner: roboshop
+           group: roboshop
+
+       - name: Copy and unzip local archive to remote target
+         ansible.builtin.unarchive:
+           src: /tmp/payment.zip
+           dest: /app
+           remote_src: yes
+
+       - name: install dependencies
+         ansible.builtin.pip:
+           requirements: /app/requirements.txt
+           executable: pip3
+         args:
+           chdir: /app
+
+       - name: Copy an module service
+         ansible.builtin.template:
+           src: payment.service.j2
+           dest: /etc/systemd/system/payment.service
+
+       - name: daemon_reload the service
+         ansible.builtin.systemd_service:
+           daemon_reload: true
+
+       - name: started and enabled  
+         ansible.builtin.service:
+           name: payment
+           state: restarted
+           enabled: true
+      
+
+
+
+
+
+        
+   
+
+
+
+        
+
+           
+        

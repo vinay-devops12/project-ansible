@@ -1,0 +1,85 @@
+     
+ - name: user service
+   hosts: user
+   become: true
+   tasks:   
+     - name: dnf module enable nodejs:20 -y
+       command: dnf module enable nodejs:20 -y
+
+     - name: Install nodejs:20 -y 
+       ansible.builtin.package:
+         name:  nodejs
+         state: present
+
+     - name: Ensure service system  roboshop user exists
+       ansible.builtin.user:
+         name: roboshop
+         system: true
+         shell: /usr/sbin/nologin
+         home: /app
+         state: present
+         comment: "roboshop system user"
+
+     - name: Remove app directory 
+       ansible.builtin.file:
+         path: /app
+         state: absent
+
+     - name: Install nodejs:20 -y 
+       ansible.builtin.package:
+         name:  nodejs
+         state: present
+
+     - name: Ensure service system  roboshop user exists
+       ansible.builtin.user:
+         name: roboshop
+         system: true
+         shell: /usr/sbin/nologin
+         home: /app
+         state: present
+       comment: "roboshop system user"
+
+     - name: delete user.zip in /tmp directory
+       ansible.builtin.file:
+         path: /tmp/user.zip
+         state: absent 
+
+
+     - name: create app directory 
+       ansible.builtin.file:
+         path: /app
+         state: directory 
+
+
+     - name: Download user
+       ansible.builtin.get_url:
+         url: https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip
+         dest: /tmp/user.zip
+
+     - name: Extract local to unarchive user
+       ansible.builtin.unarchive:
+         src: /tmp/user.zip
+         dest: /app
+         remote_src: true
+
+     - name: Install Node.js dependencies from package.json
+       community.general.npm:
+         path: /app
+         state: present
+
+
+     - name: Copy file user service
+       ansible.builtin.template:
+         src: user.service.j2
+         dest: /etc/systemd/system/user.service 
+
+
+     - name: daemon-reload
+       ansible.builtin.systemd_service:
+         daemon_reload: true
+
+     - name: Enable and start the service
+       ansible.builtin.service:
+         name: user       
+         state: restarted 
+         enabled: yes  
