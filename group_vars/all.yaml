@@ -12,4 +12,4 @@ USER_HOST: user.daws-90s.shop
 CART_HOST: cart.daws-90s.shop
 SHIPPING_HOST: shipping.daws-90s.shop
 PAYMENT_HOST: payment.daws-90s.shop
-#FRONTEND_HOST: frontend.daws-90s.shop
+FRONTEND_HOST: frontend.daws-90s.shop
