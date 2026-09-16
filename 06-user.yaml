@@ -1,85 +1,76 @@
-     
- - name: user service
-   hosts: user
-   become: true
-   tasks:   
-     - name: dnf module enable nodejs:20 -y
-       command: dnf module enable nodejs:20 -y
+---
+- name: user service
+  hosts: user
+  become: true
+  vars:
+    MONGODB_HOST: "mongodb.daws-90s.shop"
+    REDIS_HOST: "redis.daws-90s.shop"
+  tasks:   
+    - name: enable nodejs:20 module stream
+      ansible.builtin.command: dnf module enable nodejs:20 -y
+      changed_when: false
 
-     - name: Install nodejs:20 -y 
-       ansible.builtin.package:
-         name:  nodejs
-         state: present
+    - name: install nodejs runtime
+      ansible.builtin.package:
+        name: nodejs
+        state: present
 
-     - name: Ensure service system  roboshop user exists
-       ansible.builtin.user:
-         name: roboshop
-         system: true
-         shell: /usr/sbin/nologin
-         home: /app
-         state: present
-         comment: "roboshop system user"
+    - name: ensure roboshop system user exists
+      ansible.builtin.user:
+        name: roboshop
+        system: true
+        shell: /sbin/nologin
+        home: /app
+        state: present
+        comment: "roboshop system user"
 
-     - name: Remove app directory 
-       ansible.builtin.file:
-         path: /app
-         state: absent
+    - name: remove existing app directory 
+      ansible.builtin.file:
+        path: /app
+        state: absent
 
-     - name: Install nodejs:20 -y 
-       ansible.builtin.package:
-         name:  nodejs
-         state: present
+    - name: clean user.zip in /tmp directory
+      ansible.builtin.file:
+        path: /tmp/user.zip
+        state: absent 
 
-     - name: Ensure service system  roboshop user exists
-       ansible.builtin.user:
-         name: roboshop
-         system: true
-         shell: /usr/sbin/nologin
-         home: /app
-         state: present
-       comment: "roboshop system user"
+    - name: create app directory 
+      ansible.builtin.file:
+        path: /app
+        state: directory 
+        owner: roboshop
+        group: roboshop
 
-     - name: delete user.zip in /tmp directory
-       ansible.builtin.file:
-         path: /tmp/user.zip
-         state: absent 
+    - name: download user artifact
+      ansible.builtin.get_url:
+        url: https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip
+        dest: /tmp/user.zip
 
+    - name: extract user artifact to /app
+      ansible.builtin.unarchive:
+        src: /tmp/user.zip
+        dest: /app
+        remote_src: true
+        owner: roboshop
+        group: roboshop
 
-     - name: create app directory 
-       ansible.builtin.file:
-         path: /app
-         state: directory 
+    - name: install nodejs dependencies
+      community.general.npm:
+        path: /app
+        state: present
 
+    - name: deploy user systemd service configuration
+      ansible.builtin.template:
+        src: user.service.j2
+        dest: /etc/systemd/system/user.service 
+       
 
-     - name: Download user
-       ansible.builtin.get_url:
-         url: https://roboshop-artifacts.s3.amazonaws.com/user-v3.zip
-         dest: /tmp/user.zip
+    - name: reload systemd daemon
+      ansible.builtin.systemd_service:
+        daemon_reload: true
 
-     - name: Extract local to unarchive user
-       ansible.builtin.unarchive:
-         src: /tmp/user.zip
-         dest: /app
-         remote_src: true
-
-     - name: Install Node.js dependencies from package.json
-       community.general.npm:
-         path: /app
-         state: present
-
-
-     - name: Copy file user service
-       ansible.builtin.template:
-         src: user.service.j2
-         dest: /etc/systemd/system/user.service 
-
-
-     - name: daemon-reload
-       ansible.builtin.systemd_service:
-         daemon_reload: true
-
-     - name: Enable and start the service
-       ansible.builtin.service:
-         name: user       
-         state: restarted 
-         enabled: yes  
+    - name: enable and start user service
+      ansible.builtin.service:
+        name: user       
+        state: restarted 
+        enabled: yes
