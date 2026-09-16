@@ -1,9 +1,6 @@
    - name: payment service configure
      hosts: payment
      become: yes
-     vars:
-       CART_HOST: "cart.daws-90s.shop"
-       MYSQL_HOST: "mysql.daws-90s.shop"
      tasks:
        - name: install python3 gcc python3-devel -y
          ansible.builtin.package:
