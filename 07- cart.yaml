@@ -1,73 +1,78 @@
-   - name: configure the cart sevrvice
-     hosts: cart
-     become: true
-     vars:
-       CATALOGUE_HOST: "catalogue.daws-90s.shop"
-       REDIS_HOST: "redis.daws-90s.shop"
-     tasks:
-       - name: enable  nodejs -y service
-         command: dnf module enable nodejs:20 -y
 
-       - name: is installed
-         ansible.builtin.package:
-           name: nodejs
-           state: present
-
-       - name: Create the ansible system user
-         ansible.builtin.user:
-           name: roboshop
-           system: true
-           shell: /sbin/nologin
-           home: /app
-           comment: "Ansible Automation System Service Account"
-           state: present
-
-       - name: Remove a directory and all its contents
-         ansible.builtin.file:
-           path: /app
-           state: absent
-
-       - name: Remove the zip file in cart
-         ansible.builtin.file:
-           path: /tmp/cart.zip
-           state: absent 
-
-       - name: Create application directory
-         ansible.builtin.file:
-           path: /app
-           state: directory
-
-       - name: Download the cart file from a remote URL
-         ansible.builtin.get_url:
-           url: https://roboshop-artifacts.s3.amazonaws.com/cart-v3.zip
-           dest: /tmp/cart.zip
-           
-       
-       - name: Extract archive already existing on the remote server
-         ansible.builtin.unarchive:
-           src: /tmp/cart.zip
-           dest: /app
-           remote_src: true
-
-       - name: Install npm dependencies from package.json
-         community.general.npm:
-           path: /app
-           state: present
-
-       - name: Copy cart service binary or config
-         ansible.builtin.template:
-           src: cart.service.j2
-           dest: /etc/systemd/system/cart.service
-
-       - name: daemon to reload its configuration
-         ansible.builtin.systemd_service:
-           daemon_reload: true
-   
-       - name: start and is enabled and service    
-         ansible.builtin.service:
-           name: cart
-           state: restarted
-           enabled: true
       
 
-         
+      
+- name: configure the cart service
+  hosts: cart
+  become: true
+  vars:
+    CATALOGUE_HOST: "catalogue.daws-90s.shop"
+    REDIS_HOST: "redis.daws-90s.shop"
+  tasks:
+    - name: enable nodejs:20 module stream
+      ansible.builtin.command: dnf module enable nodejs:20 -y
+      changed_when: false
+
+    - name: install nodejs
+      ansible.builtin.package:
+        name: nodejs
+        state: present
+
+    - name: create system user account
+      ansible.builtin.user:
+        name: roboshop
+        system: true
+        shell: /sbin/nologin
+        home: /app
+        state: present
+
+    - name: remove existing app directory
+      ansible.builtin.file:
+        path: /app
+        state: absent
+
+    - name: remove old cart zip
+      ansible.builtin.file:
+        path: /tmp/cart.zip
+        state: absent
+
+    - name: create application directory
+      ansible.builtin.file:
+        path: /app
+        state: directory
+        owner: roboshop
+        group: roboshop
+
+    - name: download cart artifact
+      ansible.builtin.get_url:
+        url: https://roboshop-artifacts.s3.amazonaws.com/cart-v3.zip
+        dest: /tmp/cart.zip
+
+    - name: extract archive to app directory
+      ansible.builtin.unarchive:
+        src: /tmp/cart.zip
+        dest: /app
+        remote_src: true
+        owner: roboshop
+        group: roboshop
+
+    - name: install npm dependencies
+      community.general.npm:
+        path: /app
+        state: present
+
+    - name: deploy cart systemd service
+      ansible.builtin.template:
+        src: cart.service.j2
+        dest: /etc/systemd/system/cart.service
+        mode: '0644'
+
+    - name: reload systemd daemon
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: start and enable cart service
+      ansible.builtin.service:
+        name: cart
+        state: restarted
+        enabled: true
