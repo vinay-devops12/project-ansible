@@ -1,46 +1,60 @@
-  
-            
 - name: configure frontend server
   hosts: frontend
   become: yes
+  vars:
+    CATALOGUE_HOST: "catalogue.daws-90s.shop"
+    USER_HOST: "user.daws-90s.shop"
+    CART_HOST: "cart.daws-90s.shop"
+    SHIPPING_HOST: "shipping.daws-90s.shop"
+    PAYMENT_HOST: "payment.daws-90s.shop"
   tasks:
-  - name: enable nginx 1.24
-    command: dnf module enable nginx:1.24 -y
-  - name: install nginx
-    package:
-      name: nginx
-      state: present
-  - name: remove html directory
-    file:
-      path: /usr/share/nginx/html/
-      state: absent
-  - name: delete frontend.zip in tmp directory
-    file:
-      path: /tmp/frontend.zip
-      state: absent
-  - name: create html directory
-    file:
-      path: /usr/share/nginx/html/
-      state: directory
-  - name: download frontend
-    get_url:
-      url: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip 
-      dest: /tmp/frontend.zip
-  - name: unzip frontend
-    unarchive:
-      src: /tmp/frontend.zip
-      dest: /usr/share/nginx/html/
-      remote_src: yes
-  - name: remove nginx default conf
-    file:
-      path: /etc/nginx/nginx.conf
-      state: absent
-  - name: copy nginx conf
-    template:
-      src: nginx.conf.j2
-      dest: /etc/nginx/nginx.conf
-  - name: restart and enable frontend
-    service:
-      name: nginx
-      state: restarted
-      enabled: yes
+    - name: enable nginx 1.24
+      ansible.builtin.command: dnf module enable nginx:1.24 -y
+      changed_when: false
+
+    - name: install nginx
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: remove html directory
+      ansible.builtin.file:
+        path: /usr/share/nginx/html/
+        state: absent
+
+    - name: delete frontend.zip in tmp directory
+      ansible.builtin.file:
+        path: /tmp/frontend.zip
+        state: absent
+
+    - name: create html directory
+      ansible.builtin.file:
+        path: /usr/share/nginx/html/
+        state: directory
+
+    - name: download frontend
+      ansible.builtin.get_url:
+        url: https://roboshop-artifacts.s3.amazonaws.com/frontend-v3.zip 
+        dest: /tmp/frontend.zip
+
+    - name: unzip frontend
+      ansible.builtin.unarchive:
+        src: /tmp/frontend.zip
+        dest: /usr/share/nginx/html/
+        remote_src: yes
+
+    - name: remove nginx default conf
+      ansible.builtin.file:
+        path: /etc/nginx/nginx.conf
+        state: absent
+
+    - name: copy nginx conf
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+
+    - name: restart and enable frontend
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+        enabled: yes
