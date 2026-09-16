@@ -1,7 +1,10 @@
     - name: configure the service
       hosts: shipping
       become: yes
-      tasks: 
+      vars:
+        CART_HOST: "cart.daws-90s.shop"
+        MYSQL_HOST: "mysql.daws-90s.shop"
+      tasks:    
        - name: Install maven
          ansible.builtin.dnf:
            name: maven
