@@ -81,7 +81,7 @@
 
     - name: demon reload
       ansible.builtin.systemd_service:
-      daemon_reload: true
+      demon_reload: true
 
     - name: enable and start catalogue
       service:
