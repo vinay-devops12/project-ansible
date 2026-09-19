@@ -10,13 +10,13 @@
       - redis
       - rabbitmq
       - catalogue
-      - frontend
+      #- frontend
       - mysql
       - user
-      - cart
-      - shipping
-      - payment
-      - frontend
+      #- cart
+     # - shipping
+      #- payment
+      #- frontend
 
     ami_id: "ami-0220d79f3f480ecf5"
 
