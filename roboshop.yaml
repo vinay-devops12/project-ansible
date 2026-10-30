@@ -10,7 +10,6 @@
       - redis
       - rabbitmq
       - catalogue
-      - frontend
       - mysql
       - user
       - cart
