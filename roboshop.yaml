@@ -18,7 +18,7 @@
       - payment
       - frontend
 
-    ami_id: "ami-0220d79f3f480ecf5"
+    ami_id: "ami-0eec78ea4cbaaf5bd"
 
   tasks:
     - name: create ec2-instance
